@@ -1,0 +1,28 @@
+CoreLogic accounts were requested for you.
+Usually it takes about a week.
+Without this account you can’t get access to any CoreLogic resources (Git, Jira, Confluence, etc)
+
+For this time your first task is:
+
+1.	Install local env PCF Dev on your machines
+See doc file attached, unfortunately it is outdated a bit so use it just for information.
+https://pivotal.io/platform/pcf-tutorials/getting-started-with-pivotal-cloud-foundry
+https://spring.io/guides/gs/messaging-reactor
+
+2.	Create  “Hello World” application on Spring Reactor
+-	This application should receive data using REST call
+Input data model – 2 lists of strings, 1st is a list of names of months, 2nd – list of names of week days
+-	Request processing logic:
+- in asynchronously mode
+- sort both list in parallel (using Spring reactor)
+- perform delay for months – 1sec, for week days – 0.5sec
+- write results into log
+3.	Ask Maksym and Roman about code review.
+4.	Fix the comments.
+5.	Deploy it on PCF Dev on your local machine
+6.	Run it and let us check the results :)
+
+
+Maksym and Roman can help with technical but it is appreciated is you google it before asking.
+
+Deadline for this task – Nov 17  14-00
