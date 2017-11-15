@@ -9,9 +9,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class CalendarSortController {
 
     @Autowired
-    CalendarSortService calendarSortService;
-
-    private static final String template = "Hello, %s!";
+    private CalendarSortService calendarSortService;
 
     @PostMapping("/sort")
     public CalendarDto sort(@RequestBody CalendarDto input) {
