@@ -17,18 +17,24 @@ public class CalendarSortServiceImpl implements CalendarSortService {
     @Override
     public CalendarDto sort(final CalendarDto calendarDto) {
         try {
-            Flux<String> month = Flux.fromIterable(calendarDto.getMonths());
-            Flux<String> weekDay = Flux.fromIterable(calendarDto.getWeekDay());
+            final Flux<String> month = Flux.fromIterable(calendarDto.getMonths());
+            final Flux<String> weekDay = Flux.fromIterable(calendarDto.getWeekDay());
+
             final CalendarDto result = new CalendarDto();
-            result.setMonths(sortAsync(month, MONTH_SORT_DELAY));
-            result.setWeekDay(sortAsync(weekDay, WEEK_DAY_SORT_DELAY));
+            result.setMonths(fluxToString(sortAsync(month, MONTH_SORT_DELAY)));
+            result.setWeekDay(fluxToString(sortAsync(weekDay, WEEK_DAY_SORT_DELAY)));
             return result;
         } catch (NullPointerException e) {
             throw new SortException(e);
         }
     }
 
-    private List<String> sortAsync(final Flux<String> month, Duration delay) {
-        return month.delayElements(delay).sort().toStream().collect(Collectors.toList());
+    private Flux<String> sortAsync(final Flux<String> stringFlux, final Duration delay) {
+        return stringFlux.delayElements(delay).sort();
     }
+
+    private List<String> fluxToString(final Flux<String> stringFlux) {
+        return stringFlux.toStream().collect(Collectors.toList());
+    }
+
 }
