@@ -1,6 +1,7 @@
 package com.hello;
 
 import java.time.Duration;
+import java.util.List;
 import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
@@ -15,12 +16,19 @@ public class CalendarSortServiceImpl implements CalendarSortService {
 
     @Override
     public CalendarDto sort(final CalendarDto calendarDto) {
+        try {
+            Flux<String> month = Flux.fromIterable(calendarDto.getMonths());
+            Flux<String> weekDay = Flux.fromIterable(calendarDto.getWeekDay());
+            final CalendarDto result = new CalendarDto();
+            result.setMonths(sortAsync(month, MONTH_SORT_DELAY));
+            result.setWeekDay(sortAsync(weekDay, WEEK_DAY_SORT_DELAY));
+            return result;
+        } catch (NullPointerException e) {
+            throw new SortException(e);
+        }
+    }
 
-        Flux<String> month = Flux.fromIterable(calendarDto.getMonths());
-        Flux<String> weekDay = Flux.fromIterable(calendarDto.getWeekDay());
-
-        calendarDto.setMonths(month.delayElements(MONTH_SORT_DELAY).sort().toStream().collect(Collectors.toList()));
-        calendarDto.setWeekDay(weekDay.delayElements(WEEK_DAY_SORT_DELAY).sort().toStream().collect(Collectors.toList()));
-        return calendarDto;
+    private List<String> sortAsync(final Flux<String> month, Duration delay) {
+        return month.delayElements(delay).sort().toStream().collect(Collectors.toList());
     }
 }
