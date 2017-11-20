@@ -3,11 +3,13 @@ package com.hello;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.stereotype.Service;
 
+import reactor.core.Disposable;
 import reactor.core.publisher.Flux;
 
 @Service
@@ -24,17 +26,15 @@ public class CalendarSortServiceImpl implements CalendarSortService {
         try {
             final Flux<String> month = Flux.fromIterable(calendarDto.getMonths());
             final Flux<String> weekDay = Flux.fromIterable(calendarDto.getWeekDay());
-            final int totalMonth = calendarDto.getMonths().size();
-            final int totalWeekDays = calendarDto.getWeekDay().size();
 
             final CalendarDto result = new CalendarDto();
-            result.setMonths(Collections.synchronizedList(new ArrayList<>(totalMonth)));
-            result.setWeekDay(Collections.synchronizedList(new ArrayList<>(totalWeekDays)));
+            result.setMonths(Collections.synchronizedList(new ArrayList<>(calendarDto.getMonths().size())));
+            result.setWeekDay(Collections.synchronizedList(new ArrayList<>(calendarDto.getWeekDay().size())));
 
-            month.sort().delayElements(MONTH_SORT_DELAY).subscribe(result.getMonths()::add);
-            weekDay.sort().delayElements(WEEK_DAY_SORT_DELAY).subscribe(result.getWeekDay()::add);
+            Disposable sorterMonth = sortAndSubscribe(month, result.getMonths(), MONTH_SORT_DELAY);
+            Disposable sorterWeek = sortAndSubscribe(weekDay, result.getWeekDay(), WEEK_DAY_SORT_DELAY);
 
-            while (totalMonth > result.getMonths().size() || totalWeekDays > result.getWeekDay().size()) {
+            while (!(sorterMonth.isDisposed() && sorterWeek.isDisposed())) {
                 try {
                     Thread.sleep(SLEEP_DELAY);
                 } catch (InterruptedException e) {
@@ -45,5 +45,9 @@ public class CalendarSortServiceImpl implements CalendarSortService {
         } catch (NullPointerException e) {
             throw new SortException(e);
         }
+    }
+
+    private Disposable sortAndSubscribe(final Flux<String> fluxString, final List result, final Duration sortDelay) {
+        return fluxString.sort().delayElements(sortDelay).doOnSubscribe(System.out::println).subscribe(result::add);
     }
 }
